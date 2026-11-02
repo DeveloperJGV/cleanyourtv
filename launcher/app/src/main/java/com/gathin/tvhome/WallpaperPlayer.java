@@ -53,6 +53,8 @@ final class WallpaperPlayer {
     private boolean loading;
     private String displayed = "";
     /** wallpaper_captions: the shown picture's name from wallpapers/captions.txt; null when off or there are none. */
+    /** Lets the Now playing panel find the caption and hide it while a song is shown. */
+    static final String CAPTION_TAG = "wallpaper_caption";
     private final TextView caption;
     private final Map<String, String> names;
     /** wallpaper_moods: the collection's groups by time of day; empty rotates through all of it. */
@@ -217,6 +219,7 @@ final class WallpaperPlayer {
         text.setEllipsize(TextUtils.TruncateAt.END);
         text.setMaxWidth(Math.round(520 * dp));
         text.setFocusable(false);
+        text.setTag(CAPTION_TAG);
         text.setAlpha(0f);
         try {
             text.setTypeface(UiFont.get(context, R.string.font_regular));

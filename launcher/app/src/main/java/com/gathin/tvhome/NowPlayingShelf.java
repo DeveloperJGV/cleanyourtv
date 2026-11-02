@@ -55,6 +55,7 @@ final class NowPlayingShelf {
 
     private boolean shown;
     private boolean running;
+    private boolean dockFocused = true;
     private int heroVisibility = -1;
     private float dockTop = -1;
     private Bitmap lastCover;
@@ -129,8 +130,24 @@ final class NowPlayingShelf {
 
     private void update() {
         if (!running) return;
-        if (source.active()) show();
+        if (source.active() && dockFocused) show();
         else hide();
+    }
+
+    /**
+     * Focus on the dock (true) or on the rows below it (false): the grid scrolls up there and the panel would sit
+     * over the apps, so it steps aside until the dock is back.
+     */
+    void dockFocused(boolean onDock) {
+        if (onDock == dockFocused) return;
+        dockFocused = onDock;
+        update();
+    }
+
+    /** The wallpaper's caption shares the top right with the panel: hide it while the song is on screen. */
+    private void captionHidden(boolean hidden) {
+        View caption = root.findViewWithTag(WallpaperPlayer.CAPTION_TAG);
+        if (caption != null) caption.setVisibility(hidden ? View.INVISIBLE : View.VISIBLE);
     }
 
     private void show() {
@@ -158,6 +175,7 @@ final class NowPlayingShelf {
             shown = true;
             if (heroVisibility < 0) heroVisibility = hero.getVisibility();
             if (heroVisibility == View.VISIBLE) hero.setVisibility(View.INVISIBLE);
+            captionHidden(true);
             panel.setVisibility(View.VISIBLE);
             // After the next layout pass: header and dock have their real positions by then.
             panel.post(this::layoutPanel);
@@ -176,6 +194,7 @@ final class NowPlayingShelf {
         if (!shown) return;
         shown = false;
         if (heroVisibility == View.VISIBLE) hero.setVisibility(View.VISIBLE);
+        captionHidden(false);
         if (animate) {
             panel.animate().alpha(0f).setDuration(200).withEndAction(() -> {
                 if (!shown) panel.setVisibility(View.GONE);
@@ -214,7 +233,8 @@ final class NowPlayingShelf {
         root.getLocationInWindow(rootAt);
         header.getLocationInWindow(at);
         float top = at[1] - rootAt[1] + header.getHeight() + 14 * density;
-        float bottom = (dockTop > 0 ? dockTop : gridTop(rootAt)) - 18 * density;
+        // The dock's glass band starts ~20dp above its tiles; keep a clear gap above the band.
+        float bottom = (dockTop > 0 ? dockTop : gridTop(rootAt)) - 34 * density;
         float room = bottom - top;
         // From biggest to smallest; the first size that fits wins. Compact (one line, no cover) is the last try.
         float[] titles = {46f, 40f, 34f, 30f, 26f, 24f};
@@ -306,7 +326,7 @@ final class NowPlayingShelf {
         panel.setGravity(Gravity.CENTER_VERTICAL);
         panel.setPadding(pad, pad, dp(32), pad);
         GradientDrawable bg = new GradientDrawable();
-        bg.setColor(0x73000000);
+        bg.setColor(0x99000000);
         bg.setCornerRadius(dp(28));
         panel.setBackground(bg);
         panel.setVisibility(View.GONE);
