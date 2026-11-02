@@ -35,6 +35,7 @@ public final class LauncherSettingsActivity extends Activity {
     private static final String[] CLOCK_FORMATS = {"system", "12", "24"};
     private final TextView[] clockChoices = new TextView[CLOCK_FORMATS.length];
     private TextView wallpaperChoice;
+    private TextView themeChoice;
     private TextView animationsChoice;
     private TextView advancedChoice;
     private TextView followThemeChoice;
@@ -123,6 +124,9 @@ public final class LauncherSettingsActivity extends Activity {
             reverseRow(dockChoices);
             reverseRow(clockChoices);
         }
+        themeChoice = findViewById(R.id.themeChoice);
+        themeChoice.setVisibility(ThemeCatalog.installed(this).isEmpty() ? View.GONE : View.VISIBLE);
+        themeChoice.setOnClickListener(v -> showThemePicker());
         wallpaperChoice = findViewById(R.id.wallpaperChoice);
         wallpaperChoice.setOnClickListener(v -> showWallpaperPicker());
         animationsChoice = findViewById(R.id.animationsChoice);
@@ -173,7 +177,8 @@ public final class LauncherSettingsActivity extends Activity {
         findViewById(R.id.tvSettingsChoice).setOnClickListener(v ->
                 open(SystemSettings.intent(this, Settings.ACTION_SETTINGS)));
         refresh();
-        if (config.launcherSettingsButton) reorderChoice.requestFocus();
+        if (themeChoice.getVisibility() == View.VISIBLE) themeChoice.requestFocus();
+        else if (config.launcherSettingsButton) reorderChoice.requestFocus();
         else columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
     }
 
@@ -181,6 +186,30 @@ public final class LauncherSettingsActivity extends Activity {
         LinearLayout row = (LinearLayout) views[0].getParent();
         row.removeAllViews();
         for (int i = views.length - 1; i >= 0; i--) row.addView(views[i]);
+    }
+
+    private void showThemePicker() {
+        List<ThemeCatalog.Theme> themes = ThemeCatalog.installed(this);
+        if (themes.isEmpty()) return;
+        String[] labels = new String[themes.size()];
+        for (int i = 0; i < themes.size(); i++) labels[i] = themes.get(i).label;
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.theme_picker_title)
+                .setSingleChoiceItems(labels, ThemeCatalog.currentIndex(this, themes), (dialog, which) -> {
+                    ThemeCatalog.Theme selected = themes.get(which);
+                    try {
+                        ThemeCatalog.apply(this, selected.id);
+                        dialog.dismiss();
+                        setResult(RESULT_OK);
+                        Toast.makeText(this, getString(R.string.theme_applied, selected.label),
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                    } catch (java.io.IOException e) {
+                        Toast.makeText(this, R.string.theme_apply_failed, Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void showWallpaperPicker() {
@@ -311,6 +340,9 @@ public final class LauncherSettingsActivity extends Activity {
                 getString(advancedEffects ? R.string.on : R.string.off)));
         advancedChoice.setEnabled(animations);
         advancedChoice.setAlpha(animations ? 1f : 0.5f);
+        String themeLabel = ThemeCatalog.currentLabel(this);
+        themeChoice.setText(getString(R.string.theme_state,
+                themeLabel != null ? themeLabel : getString(R.string.theme_custom)));
         String wallpaperCurrent = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
         wallpaperChoice.setText(getString(R.string.wallpaper_state,
                 "none".equals(wallpaperCurrent) ? getString(R.string.wallpaper_none)

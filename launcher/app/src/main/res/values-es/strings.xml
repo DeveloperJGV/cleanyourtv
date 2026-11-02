@@ -90,6 +90,11 @@
     <string name="home_settings">Elegir inicio predeterminado</string>
     <string name="home_settings_help">Elige tu inicio original para dejar de usar CleanYourTV como inicio, o CleanYourTV para volver a él. El lanzador original tiene que estar activado y el televisor debe ofrecer un selector de inicio; si estaba desactivado, usa antes el script de restauración.</string>
     <string name="rows_below_dock_label">Filas debajo del dock</string>
+    <string name="theme_picker_title">Tema</string>
+    <string name="theme_state">Tema: %1$s</string>
+    <string name="theme_custom">personalizado</string>
+    <string name="theme_applied">Tema: %1$s</string>
+    <string name="theme_apply_failed">No se pudo poner el tema</string>
     <string name="wallpaper_label">Fondo</string>
     <string name="wallpaper_state">Fondo: %1$s</string>
     <string name="wallpaper_none">Ninguno</string>
