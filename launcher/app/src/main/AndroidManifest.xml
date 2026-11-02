@@ -221,6 +221,17 @@
         <!-- Bound again by the system after a force stop, which restarts Home on firmware that kills
              third-party apps (TCL tc8000_ay30a2). It reads no notification.
              cmd notification allow_listener com.gathin.tvhome/.GuardRevival -->
+        <!-- Now playing: solo para leer las sesiones de medios (qué suena); no lee notificaciones.
+             cmd notification allow_listener com.gathin.tvhome/com.gathin.tvhome.NowPlayingListener -->
+        <service
+            android:name=".NowPlayingListener"
+            android:exported="true"
+            android:label="@string/now_playing_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
         <service
             android:name=".GuardRevival"
             android:directBootAware="true"

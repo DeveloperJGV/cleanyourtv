@@ -53,6 +53,8 @@
     <string name="columns_label">Apps per row</string>
     <string name="rows_below_dock_label">Rows below dock</string>
     <string name="dock_opacity_label">Dock band opacity</string>
+    <string name="now_playing_kicker">Now playing · %1$s</string>
+    <string name="now_playing_name">Now playing</string>
     <string name="theme_picker_title">Theme</string>
     <string name="theme_state">Theme: %1$s</string>
     <string name="theme_custom">custom</string>

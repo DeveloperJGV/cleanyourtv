@@ -143,6 +143,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private AppAdapter adapter;
     private RecyclerView grid;
     private FrameLayout root;
+    /** Now playing en grande (tema con now_playing hero/both); null si el tema no lo pide. */
+    private NowPlayingShelf nowPlaying;
     private WallpaperPlayer wallpaperPlayer;
     private GlassView glass;
     private View ambient;
@@ -533,6 +535,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // dock_title false: the name above the dock (and the cinematic lines under it) never shows; the glow
         // still follows the dock.
         if (!cfg.dockTitle) hero.setVisibility(View.GONE);
+        nowPlaying = NowPlayingShelf.create(this, root, hero, findViewById(R.id.leftBlock), handler, density,
+                cfg.animations && !cfg.reducedMotion);
         greeting = findViewById(R.id.greeting);
         clockBlock = findViewById(R.id.leftBlock);
         greetingColor = greeting.getCurrentTextColor();
@@ -1091,6 +1095,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return;
         }
         restartIdleClock();
+        if (nowPlaying != null) nowPlaying.start();
         promptsPaused = false;
         if (grid.getAdapter() == null) grid.setAdapter(adapter);   // dropped by onTrimMemory
         switch (tileRefresh.onResume(packagesChangedSinceRebuild())) {
@@ -1298,6 +1303,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // Only Home's own share is dropped: a key service that saw the same DOWN keeps its hold.
         RemoteKeys.release(this);
         cancelHoldOk();
+        if (nowPlaying != null) nowPlaying.stop();
         root.removeCallbacks(showIdleClock);
         endReorder();   // Home or another app while reordering keeps the order so far
         wallpaperPlayer.stop();
@@ -1896,6 +1902,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     // ---- top shelf -------------------------------------------------------------------------------
 
     private void showHero(int position, float dockTopInRoot) {
+        if (nowPlaying != null) nowPlaying.place(dockTopInRoot);
         String label = adapter.labelAt(position);
         int color = adapter.ambientColorAt(position);
         float y = dockTopInRoot - 14 * density - 26 * density - hero.getHeight();
